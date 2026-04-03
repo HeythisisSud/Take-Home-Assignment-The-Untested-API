@@ -100,3 +100,77 @@ describe('GET /tasks?page=1&limit=10', () => {
   });
 
 });
+
+
+
+
+describe('GET /tasks/stats', () => {
+
+  beforeEach(async () => {
+    const now = new Date();
+    const pastDate = new Date(now.getTime() - 86400000).toISOString(); // yesterday
+    const futureDate = new Date(now.getTime() + 86400000).toISOString(); // tomorrow
+
+    await request(app).post('/tasks').send({
+      title: 'Todo Task',
+      description: 'Task 1',
+      status: 'todo',
+      priority: 'low',
+      dueDate: futureDate
+    });
+
+    await request(app).post('/tasks').send({
+      title: 'In Progress Task',
+      description: 'Task 2',
+      status: 'in_progress',
+      priority: 'medium',
+      dueDate: futureDate
+    });
+
+    await request(app).post('/tasks').send({
+      title: 'Done Task',
+      description: 'Task 3',
+      status: 'done',
+      priority: 'high',
+      dueDate: pastDate
+    });
+
+    await request(app).post('/tasks').send({
+      title: 'Overdue Task',
+      description: 'Task 4',
+      status: 'todo',
+      priority: 'high',
+      dueDate: pastDate
+    });
+  });
+
+  it('should return correct task statistics', async () => {
+    const res = await request(app).get('/tasks/stats');
+
+    expect(res.statusCode).toBe(200);
+
+    expect(res.body).toHaveProperty('todo');
+    expect(res.body).toHaveProperty('in_progress');
+    expect(res.body).toHaveProperty('done');
+    expect(res.body).toHaveProperty('overdue');
+
+    expect(res.body.todo).toBe(2);        
+    expect(res.body.in_progress).toBe(1);  
+    expect(res.body.done).toBe(1);         
+    expect(res.body.overdue).toBe(1);      
+  });
+
+  it('should return zero counts when no tasks exist', async () => {
+    const res = await request(app).get('/tasks/stats');
+
+    expect(res.statusCode).toBe(200);
+
+    expect(res.body).toEqual({
+      todo: 0,
+      in_progress: 0,
+      done: 0,
+      overdue: 0
+    });
+  });
+
+});
