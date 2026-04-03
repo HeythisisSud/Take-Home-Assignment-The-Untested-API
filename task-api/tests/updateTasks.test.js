@@ -81,3 +81,50 @@ describe('PUT /tasks/:id', () => {
   });
 
 });
+
+const request = require('supertest');
+const app = require('../app');
+
+describe('PATCH /tasks/:id/complete', () => {
+
+  let taskId;
+
+  beforeEach(async () => {
+    const res = await request(app).post('/tasks').send({
+      title: 'Incomplete Task',
+      description: 'Needs completion',
+      status: 'todo',
+      priority: 'medium'
+    });
+
+    taskId = res.body.id;
+  });
+
+  it('should mark task as complete', async () => {
+    const res = await request(app)
+      .patch(`/tasks/${taskId}/complete`);
+
+    expect(res.statusCode).toBe(200);
+
+    expect(res.body.status).toBe('done');
+    expect(res.body.completedAt).not.toBeNull();
+  });
+
+  it('should not break if task is already completed', async () => {
+    await request(app).patch(`/tasks/${taskId}/complete`);
+    const res = await request(app).patch(`/tasks/${taskId}/complete`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.status).toBe('done');
+  });
+
+  it('should return 404 for non-existing task', async () => {
+    const fakeId = '123e4567-e89b-12d3-a456-426614174000';
+
+    const res = await request(app)
+      .patch(`/tasks/${fakeId}/complete`);
+
+    expect(res.statusCode).toBe(404);
+  });
+
+});
