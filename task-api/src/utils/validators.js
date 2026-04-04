@@ -3,6 +3,15 @@ const VALID_PRIORITIES = ['low', 'medium', 'high'];
 const PROTECTED_UPDATE_FIELDS = ['id', 'createdAt', 'completedAt'];
 const MUTABLE_UPDATE_FIELDS = ['title', 'description', 'status', 'priority', 'dueDate'];
 
+const isValidFutureDueDate = (dueDate) => {
+  const parsedDate = Date.parse(dueDate);
+  if (isNaN(parsedDate)) {
+    return false;
+  }
+
+  return parsedDate > Date.now();
+};
+
 const validateCreateTask = (body) => {
   if (!body.title || typeof body.title !== 'string' || body.title.trim() === '') {
     return 'title is required and must be a non-empty string';
@@ -13,8 +22,10 @@ const validateCreateTask = (body) => {
   if (body.priority !== undefined && !VALID_PRIORITIES.includes(body.priority)) {
     return `priority must be one of: ${VALID_PRIORITIES.join(', ')}`;
   }
-  if (body.dueDate && isNaN(Date.parse(body.dueDate))) {
-    return 'dueDate must be a valid ISO date string';
+  if (body.dueDate !== undefined) {
+    if (!isValidFutureDueDate(body.dueDate)) {
+      return 'dueDate must be a valid ISO date string in the future';
+    }
   }
   return null;
 };
@@ -41,8 +52,10 @@ const validateUpdateTask = (body) => {
   if (body.priority !== undefined && !VALID_PRIORITIES.includes(body.priority)) {
     return `priority must be one of: ${VALID_PRIORITIES.join(', ')}`;
   }
-  if (body.dueDate && isNaN(Date.parse(body.dueDate))) {
-    return 'dueDate must be a valid ISO date string';
+  if (body.dueDate !== undefined) {
+    if (!isValidFutureDueDate(body.dueDate)) {
+      return 'dueDate must be a valid ISO date string in the future';
+    }
   }
   return null;
 };
