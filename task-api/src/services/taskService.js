@@ -1,6 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 
 let tasks = [];
+const UPDATABLE_FIELDS = ['title', 'description', 'status', 'priority', 'dueDate'];
 
 const getAll = () => [...tasks];
 
@@ -47,7 +48,14 @@ const update = (id, fields) => {
   const index = tasks.findIndex((t) => t.id === id);
   if (index === -1) return null;
 
-  const updated = { ...tasks[index], ...fields };
+  const updates = UPDATABLE_FIELDS.reduce((acc, field) => {
+    if (fields[field] !== undefined) {
+      acc[field] = fields[field];
+    }
+    return acc;
+  }, {});
+
+  const updated = { ...tasks[index], ...updates };
   tasks[index] = updated;
   return updated;
 };
