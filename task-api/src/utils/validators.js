@@ -2,6 +2,7 @@ const VALID_STATUSES = ['todo', 'in_progress', 'done'];
 const VALID_PRIORITIES = ['low', 'medium', 'high'];
 const PROTECTED_UPDATE_FIELDS = ['id', 'createdAt', 'completedAt'];
 const MUTABLE_UPDATE_FIELDS = ['title', 'description', 'status', 'priority', 'dueDate'];
+const VALID_ASSIGN_FIELDS = ['assignee'];
 
 const isValidFutureDueDate = (dueDate) => {
   const parsedDate = Date.parse(dueDate);
@@ -60,4 +61,21 @@ const validateUpdateTask = (body) => {
   return null;
 };
 
-module.exports = { validateCreateTask, validateUpdateTask };
+const validateAssignTask = (body) => {
+  const invalidField = Object.keys(body).find((field) => !VALID_ASSIGN_FIELDS.includes(field));
+  if (invalidField) {
+    return `${invalidField} is not a valid task field`;
+  }
+
+  if (body.assignee === undefined) {
+    return 'assignee is required';
+  }
+
+  if (typeof body.assignee !== 'string' || body.assignee.trim() === '') {
+    return 'assignee must be a non-empty string';
+  }
+
+  return null;
+};
+
+module.exports = { validateCreateTask, validateUpdateTask, validateAssignTask };
