@@ -17,14 +17,23 @@ router.get('/', (req, res) => {
   }
 
   if (page !== undefined || limit !== undefined) {
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 10;
+    const pageNum = page === undefined ? 1 : parseInt(page, 10);
+    const limitNum = limit === undefined ? 10 : parseInt(limit, 10);
     const tasks = taskService.getPaginated(pageNum, limitNum);
     return res.json(tasks);
   }
 
   const tasks = taskService.getAll();
   res.json(tasks);
+});
+
+router.get('/:id', (req, res) => {
+  const task = taskService.findById(req.params.id);
+  if (!task) {
+    return res.status(404).json({ error: 'Task not found' });
+  }
+
+  res.json(task);
 });
 
 router.post('/', (req, res) => {
