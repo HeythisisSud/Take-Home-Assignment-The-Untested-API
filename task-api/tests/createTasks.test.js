@@ -1,14 +1,18 @@
 const request = require('supertest');
 const app = require('../src/app');
+const taskService = require('../src/services/taskService');
+
+beforeEach(() => {
+  taskService._reset();
+});
 
 describe('POST /tasks', () => {
-
   const validTask = {
     title: 'Complete assignment',
     description: 'Write API tests',
     status: 'todo',
     priority: 'high',
-    dueDate: new Date().toISOString()
+    dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
   };
 
   it('should create a new task successfully', async () => {

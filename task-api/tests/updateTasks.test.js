@@ -1,5 +1,10 @@
 const request = require('supertest');
 const app = require('../src/app');
+const taskService = require('../src/services/taskService');
+
+beforeEach(() => {
+  taskService._reset();
+});
 
 describe('PUT /tasks/:id', () => {
 
@@ -81,9 +86,6 @@ describe('PUT /tasks/:id', () => {
   });
 
 });
-
-const request = require('supertest');
-const app = require('../app');
 
 describe('PATCH /tasks/:id/complete', () => {
 

@@ -1,5 +1,10 @@
 const request = require('supertest');
 const app = require('../src/app');
+const taskService = require('../src/services/taskService');
+
+beforeEach(() => {
+  taskService._reset();
+});
 
 describe('DELETE /tasks/:id', () => {
 

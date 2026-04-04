@@ -1,5 +1,10 @@
 const request = require('supertest');
 const app = require('../src/app');
+const taskService = require('../src/services/taskService');
+
+beforeEach(() => {
+  taskService._reset();
+});
 
 describe('GET /tasks?status=todo', () => {
 
@@ -132,16 +137,19 @@ describe('GET /tasks/stats', () => {
       description: 'Task 3',
       status: 'done',
       priority: 'high',
-      dueDate: pastDate
+      dueDate: futureDate
     });
 
-    await request(app).post('/tasks').send({
+    const overdueTaskRes = await request(app).post('/tasks').send({
       title: 'Overdue Task',
       description: 'Task 4',
       status: 'todo',
       priority: 'high',
-      dueDate: pastDate
+      dueDate: futureDate
     });
+
+    const overdueTask = taskService.findById(overdueTaskRes.body.id);
+    overdueTask.dueDate = pastDate;
   });
 
   it('should return correct task statistics', async () => {
@@ -161,6 +169,8 @@ describe('GET /tasks/stats', () => {
   });
 
   it('should return zero counts when no tasks exist', async () => {
+    taskService._reset();
+
     const res = await request(app).get('/tasks/stats');
 
     expect(res.statusCode).toBe(200);
